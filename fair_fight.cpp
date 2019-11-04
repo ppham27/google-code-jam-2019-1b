@@ -10,12 +10,15 @@ int MostSignificantBit(int x) {
   return 8 * sizeof(int) - __builtin_clz(x);
 }
 
+// Chooses the left-most sword with the most skill.
 pair<int, int> Reduce(const pair<int, int>& a, const pair<int, int>& b) {
   if (a.first > b.first) return a;
   if (b.first > a.first) return b;  
   return a.second <= b.second ? a : b;
 }
 
+// Creates a table `memo` such that memo[i][j] is the maximum sword over the
+// the interval values[i],...,values[i + 2^j - 1].
 vector<vector<pair<int, int>>> Memoize(const vector<pair<int, int>>& values) {
   const int N = values.size();
   const int most_significant_bit = MostSignificantBit(N);
@@ -35,6 +38,7 @@ vector<vector<pair<int, int>>> Memoize(const vector<pair<int, int>>& values) {
   return memo;
 }
 
+// Uses the table created by `Memoize` to perform constant-time range queries.
 pair<int, int> QueryMax(const vector<vector<pair<int, int>>> &memo,
                         int from, int to) {
   int range = to - from;
@@ -43,12 +47,15 @@ pair<int, int> QueryMax(const vector<vector<pair<int, int>>> &memo,
   return Reduce(memo[from][bit_shift], memo[to - offset][bit_shift]);
 }
 
+// Finds the first value `x` in the range `[from, to)` such that `test(x)` is
+// true. If no such `x` exists, returns `to`.
 int Search(int from, int to, const function<bool(int)>& test) {
   if (from == to) return from;
-  const int mid = from + (to - from) / 2;
-  return test(mid) ? Search(from, mid, test) : Search(mid + 1, to, test);
+  const int x = from + (to - from) / 2;
+  return test(x) ? Search(from, x, test) : Search(x + 1, to, test);
 }
 
+// Counts the the number of fair fights over a specified range.
 long long CountFairFights(int K,
                           const vector<vector<pair<int, int>>>& C,
                           const vector<vector<pair<int, int>>>& D,
@@ -80,11 +87,11 @@ long long CountFairFights(int K,
     CountFairFights(K, C, D, pivot.second + 1, to);
 }
 
+// Counts the number of fair fights.
 long long CountFairFights(int K,
                           const vector<pair<int, int>>& C,
                           const vector<pair<int, int>>& D) {
-  return CountFairFights(K, Memoize(C), Memoize(D),
-                         0, max(C.size(), D.size()));
+  return CountFairFights(K, Memoize(C), Memoize(D), 0, max(C.size(), D.size()));
 }
 
 int main(int argc, char *argv[]) {

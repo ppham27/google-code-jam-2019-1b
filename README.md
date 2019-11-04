@@ -30,9 +30,10 @@ swift run -Xswiftc=-O FairFight < data/FairFight.in
 ```
 
 On macOS this seams to fail on the last test case due to a problem with the
-small stack size. I was able to fix that with `ulimit -s 16384`.
+small stack size. I was able to fix that with `ulimit -s 16384`. It doesn't seem
+to always pass the online judge, unfortunately.
 
-I also coded a C++ solution.
+I also coded a C++ solution that consistently passes the online judge.
 
 ```
 g++ -Wl,-stack_size,0x4000000 -std=c++14 -O3 fair_fight.cpp && time ./a.out < data/FairFight.in 

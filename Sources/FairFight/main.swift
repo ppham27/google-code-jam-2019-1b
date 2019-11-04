@@ -1,13 +1,15 @@
+// Chooses the left-most sword with the most skill.
 func reduce(_ a: (value: Int, index: Int),
             _ b: (value: Int, index: Int)) -> (value: Int, index: Int) {
     return a.value > b.value ? a : b;
 }
 
+// Creates a table `memo` such that memo[i][j] is the maximum sword over the
+// the interval values[i],...,values[i + 2^j - 1].
 func memoize<T: Collection>(_ values: T) -> [[(value: Int, index: Int)]]
   where T.Element == Int {
     let N = values.count
-    var memo: [[(value: Int, index: Int)]] = Array(repeating: [], count: N)
-    for (i, value) in values.enumerated() { memo[i].append((value, i)) }
+    var memo = values.enumerated().map {[(value: $0.element, index: $0.offset)]}
     for j in 1..<(N.bitWidth - N.leadingZeroBitCount) {
         let offset = 1 << (j - 1)
         for i in 0..<N {
@@ -19,6 +21,7 @@ func memoize<T: Collection>(_ values: T) -> [[(value: Int, index: Int)]]
     return memo
 }
 
+// Uses the table created by `memoize` to perform constant-time range queries.
 func queryMax(memo: [[(value: Int, index: Int)]],
               from: Int, to: Int) -> (value: Int, index: Int) {
     let rangeCount = to - from        
@@ -27,12 +30,15 @@ func queryMax(memo: [[(value: Int, index: Int)]],
     return reduce(memo[from][bitShift], memo[to - offset][bitShift])
 }
 
+// Finds the first value `x` in the range `[from, to)` such that `test(x)` is
+// true. If no such `x` exists, returns `to`.
 func search(_ from: Int, _ to: Int, _ test: (_: Int) -> Bool) -> Int {
     if from == to { return from }
-    let mid = from + (to - from) / 2
-    return test(mid) ? search(from, mid, test) : search(mid + 1, to, test)
+    let x = from + (to - from) / 2
+    return test(x) ? search(from, x, test) : search(x + 1, to, test)
 }
 
+// Counts the the number of fair fights over a specified range.
 func countFairFights(K: Int,
                      C: [[(value: Int, index: Int)]],
                      D: [[(value: Int, index: Int)]],
@@ -68,8 +74,9 @@ func countFairFights(K: Int,
       countFairFights(K: K, C: C, D: D, from: pivot.index + 1, to: to)
 }
 
+// Counts the number of fair fights.
 func countFairFights<T: Collection>(K: Int, C: T, D: T) -> Int
-  where T.Element == Int {    
+  where T.Element == Int {
     return countFairFights(
       K: K, C: memoize(C), D: memoize(D), from: 0, to: max(C.count, D.count))
 }
